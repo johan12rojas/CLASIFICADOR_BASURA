@@ -1,0 +1,3 @@
+[submodule "fastai-waste-classifier"]
+	path = fastai-waste-classifier
+	url = https://github.com/rootstrap/fastai-waste-classifier.git
