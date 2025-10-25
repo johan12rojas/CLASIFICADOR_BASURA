@@ -106,12 +106,118 @@ CLASIFICADOR_BASURA/
 - 🧹 **Gestión automática** de imágenes sin duplicados
 - ⚡ **Optimización de rendimiento** con warnings suprimidos
 
+## 🧠 Modelo de Predicción - Funcionamiento Técnico
+
+### **Arquitectura del Modelo:**
+- **Base:** ResNet50 (Residual Neural Network con 50 capas)
+- **Técnica:** Transfer Learning (aprendizaje por transferencia)
+- **Framework:** FastAI 2.7.12
+- **Precisión:** 98% en el dataset de validación
+
+### **Proceso de Clasificación:**
+
+#### **1. Preprocesamiento de Imagen:**
+```python
+# El modelo recibe la imagen y la procesa automáticamente:
+# - Redimensionamiento a 224x224 píxeles
+# - Normalización de valores RGB (0-255 → 0-1)
+# - Aumento de datos (data augmentation) durante entrenamiento
+```
+
+#### **2. Inferencia con ResNet50:**
+```python
+# Flujo de datos a través de la red:
+prediction = learn_loaded.predict(image_path)
+# Retorna: (clase_predicha, índice_clase, probabilidades_por_clase)
+```
+
+#### **3. Estructura de la Predicción:**
+- **`prediction[0]`**: Clase predicha (string): `'plastic'`, `'glass'`, etc.
+- **`prediction[1]`**: Índice de la clase (tensor): `[2]` para la tercera clase
+- **`prediction[2]`**: Probabilidades para todas las clases (array): `[0.1, 0.05, 0.85, ...]`
+
+#### **4. Cálculo de Confianza:**
+```python
+# Extrae la probabilidad de la clase predicha:
+num = prediction[1].numpy().tolist()  # [2]
+confidence = prediction[2].numpy()[num]  # 0.85 = 85%
+```
+
+### **Mapeo de Clases a Contenedores:**
+
+| Clase Original | Interpretación | Contenedor | Color |
+|----------------|----------------|------------|-------|
+| `cardboard` | 📦 Cartón | `azul.png` | 🔵 Azul |
+| `paper` | 📄 Papel | `azul.png` | 🔵 Azul |
+| `glass` | 🍷 Vidrio | `verde.png` | 🟢 Verde |
+| `plastic` | 🥤 Plástico | `amarillo.png` | 🟡 Amarillo |
+| `metal` | 🔩 Metal | `amarillo.png` | 🟡 Amarillo |
+| `compost` | 🌱 Compost/Orgánico | `marron.png` | 🟤 Marrón |
+| `trash` | 🗑️ Basura General | `marron.png` | 🟤 Marrón |
+
+### **Algoritmo de Decisión:**
+```python
+# 1. El modelo analiza la imagen pixel por pixel
+# 2. Extrae características visuales (formas, colores, texturas)
+# 3. Compara con patrones aprendidos durante el entrenamiento
+# 4. Asigna probabilidades a cada una de las 7 clases
+# 5. Selecciona la clase con mayor probabilidad
+# 6. Mapea la clase a su contenedor de reciclaje correspondiente
+```
+
+### **Características Técnicas del Modelo:**
+
+#### **Entrenamiento Original:**
+- **Dataset:** Imágenes descargadas via Bing Search API
+- **División:** Train/Test automática
+- **Técnica:** Fine-tuning de ResNet50 pre-entrenado en ImageNet
+- **Optimizador:** Adam con learning rate adaptativo
+- **Épocas:** Entrenado hasta convergencia (~20-30 épocas)
+
+#### **Transfer Learning:**
+```python
+# El modelo aprovecha conocimiento previo:
+# 1. ResNet50 ya sabe reconocer formas básicas (ImageNet)
+# 2. Se adapta específicamente a residuos (fine-tuning)
+# 3. Últimas capas se reentrenan para las 7 clases específicas
+```
+
+#### **Precisión y Validación:**
+- **Accuracy:** 98% en conjunto de validación
+- **Matriz de confusión:** Disponible en `classification_matrix_resnet50.png`
+- **Clases más precisas:** Glass, Metal, Plastic (>95%)
+- **Clases más desafiantes:** Compost, Trash (90-95%)
+
+### **Optimizaciones Implementadas:**
+
+#### **Para Windows:**
+```python
+# Solución al error PosixPath:
+class WindowsUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == 'pathlib' and name == 'PosixPath':
+            return WindowsPath  # Convierte PosixPath → WindowsPath
+        return super().find_class(module, name)
+```
+
+#### **Para Rendimiento:**
+- **Supresión de warnings:** `warnings.filterwarnings('ignore')`
+- **Configuración matplotlib:** Colores de fondo optimizados
+- **Gestión de memoria:** Carga eficiente de imágenes con PIL
+
+### **Limitaciones del Modelo:**
+- **Resolución:** Optimizado para imágenes ~224x224 píxeles
+- **Formato:** Funciona mejor con imágenes claras y bien iluminadas
+- **Objetos mixtos:** Puede confundirse con residuos que contienen múltiples materiales
+- **Nuevos materiales:** No reconoce materiales no vistos durante entrenamiento
+
 ## 📊 Rendimiento del Modelo
 
 - **Precisión:** 98% (según el modelo original)
 - **Clases:** 7 categorías de residuos
 - **Arquitectura:** ResNet50 con transfer learning
 - **Tiempo de inferencia:** <1 segundo por imagen
+- **Tamaño del modelo:** ~100MB (result-resnet50.pkl)
 
 ## 🙏 Créditos y Agradecimientos
 
