@@ -1,0 +1,28 @@
+# 🗑️ Clasificador de Residuos - Dependencias
+
+# Machine Learning y Deep Learning
+fastai==2.7.12
+torch==2.0.1
+torchvision==0.15.2
+
+# Procesamiento de Imágenes
+opencv-python>=4.11.0
+pillow>=12.0.0
+matplotlib>=3.10.0
+
+# Cálculo Numérico
+numpy<2.0.0
+scipy>=1.15.0
+
+# Análisis de Datos
+pandas>=2.3.0
+scikit-learn>=1.7.0
+
+# Interfaz Interactiva
+ipywidgets>=8.0.0
+jupyter>=1.0.0
+notebook>=7.0.0
+
+# Utilidades
+requests>=2.32.0
+
